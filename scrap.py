@@ -117,4 +117,6 @@ class Scrap:
             else:
                 dict_data['المرفقات'].append(0)
         df = pd.DataFrame(dict_data)
-        df.to_excel('rafed_data.xlsx',index=False)
+        df.to_csv('rafed_data.csv',encoding='UTF-8')
+        with pd.ExcelWriter('rafed_data.xlsx', engine='xlsxwriter') as writer:
+            df.to_excel(writer, index=False)
