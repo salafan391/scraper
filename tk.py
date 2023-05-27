@@ -21,7 +21,6 @@ window.title("استيراد البيانات")
 
 # Create and position the labels
 
-
 username_label = tk.Label(window, text="اسم المستخدم:")
 username_label.grid(row=1, column=1, padx=10, pady=5, sticky="e")
 

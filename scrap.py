@@ -3,6 +3,7 @@ import pandas as pd
 from bs4 import BeautifulSoup as bs
 from collections import defaultdict
 import re
+from itertools import islice
 class Scrap:
     def __init__(self,url,username,password,count):
         self.url = url
@@ -13,7 +14,6 @@ class Scrap:
         login_page = self.session.get(self.url)
         login_soup = bs(login_page.content,'html.parser')
         csrf_token = login_soup.find('input',{'name':'token'})['value']
-        self.combined_data = []
         self.login_data = {
             'token':csrf_token,
             'login_username':self.usernsme,
@@ -40,9 +40,12 @@ class Scrap:
         self.data_table = self.data_table.replace('[]','')
         df = pd.read_html(self.data_table)
         groups = []
-        # Iterate over the list in chunks of group_size
-        for i in range(0, len(df), group_size):
-            group = df[i:i+group_size]
+# Iterate over the list in chunks of group_size
+        it = iter(df)
+        while True:
+            group = list(islice(it, group_size))
+            if not group:
+                break
             groups.append(group)
         self.combined_data = [pd.concat(groups[i]).set_index(0) for i in range(len(groups))]
         dict_data = defaultdict(list)
@@ -53,8 +56,11 @@ class Scrap:
             dict_data['العمر'].append(i.loc['الفئة العمرية'][3])
             dict_data['محل الإقامة'].append(i.loc['محل الإقامة'][1])
             dict_data['العنوان'].append(i.loc['محل الإقامة'][3])
-            dict_data['التاريخ الهجري'].append(i[1].loc['تاريخ الوفاة'].split('هـ،')[0])
-            dict_data['التاريخ الميلادي'].append(i[1].loc['تاريخ الوفاة'].split('هـ،')[1])
+            dict_data['تاريخ الوفاةهجري'].append(i[1].loc['تاريخ الوفاة'].split('هـ،')[0])
+            dict_data['تاريخ الوفاة ميلادي'].append(i[1].loc['تاريخ الوفاة'].split('هـ،')[1])
+            data_string = i[1].loc['تاريخ الوفاة']
+            match = re.search(r'\d{2}:\d{2} [م|ص]',data_string)
+            dict_data['وقت الوفاة'].append(match.group())
             dict_data['رقم هوية المتوفي'].append(i[1][4])
             dict_data['سبب الوفاة'].append(i.loc['سبب الوفاة'][1])
             char_splt = 'الشاهد رقم 1 الإسم:|رقم الهوية او الإقامة:|رقم التليفون:|الشاهد رقم 2 الإسم:'
@@ -106,5 +112,9 @@ class Scrap:
             dict_data['نوع السيارة'].append(i.loc['اسم السيارة'][3])
             dict_data['السائق'].append(i.loc['السائق'][1])
             dict_data['مسار السيارة'].append(i.loc['مسار السيارة'][1])
+            if i[1].loc['المرفقات'][0] != 'غير متاح':
+                dict_data['المرفقات'].append(1)
+            else:
+                dict_data['المرفقات'].append(0)
         df = pd.DataFrame(dict_data)
         df.to_excel('rafed_data.xlsx',index=False)
