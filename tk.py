@@ -3,6 +3,7 @@ from tkinter import messagebox
 from scrap import Scrap
 from tkinter import ttk
 import pandas as pd
+from check_data import check_data
 
 def scrape_website():
     url = 'https://www.muasah.org.sa/rafed/'
@@ -26,8 +27,8 @@ def show_table():
         df = pd.read_csv('rafed_data.csv')
 
         # Insert data into the treeview
-        for i, row in enumerate(df.itertuples(), start=1):
-            values = [str(row[j]) for j in range(1, len(columns) + 1)]
+        for i, row in enumerate(df.iterrows):
+            values = [str(row[j]) for j in range(1, len(columns))]
             tree.insert("", "end", iid=i, values=values)
 
     except FileNotFoundError:
@@ -48,23 +49,24 @@ style.configure("TWindow",
 style.configure("TLabel",
                 background="#ECECEC",
                 foreground="#333333",
-                font=("Helvetica", 16))
+                font=("Helvetica", 13))
 style.configure("TEntry",
                 fieldbackground="#F0F0F0",
-                font=("Helvetica", 14))
+                font=("Helvetica", 13),
+                )
 style.configure("TButton",
                 background="#4CAF50",  # Green background
                 foreground="#FFFFFF",  # White text color
                 font=("Helvetica", 14),
                 padding=10)
 # Create and position the labels
-username_label = ttk.Label(root, text="اسم المستخدم:", style="TLabel")
+username_label = ttk.Label(root, text=":اسم المستخدم", style="TLabel")
 username_label.grid(row=1, column=1, padx=10, pady=5, sticky="e")
 
-password_label = ttk.Label(root, text="كلمة المرور:", style="TLabel")
+password_label = ttk.Label(root, text=":كلمة المرور", style="TLabel")
 password_label.grid(row=2, column=1, padx=10, pady=5, sticky="e")
 
-count_label = ttk.Label(root, text="عدد السجلات:", style="TLabel")
+count_label = ttk.Label(root, text=":عدد السجلات", style="TLabel")
 count_label.grid(row=3, column=1, padx=10, pady=5, sticky="e")
 
 # Create and position the entry fields
@@ -80,6 +82,9 @@ count_entry.grid(row=3, column=0, padx=10, pady=5)
 # Create and position the scrape button
 scrape_button = ttk.Button(root, text="استيراد", command=scrape_website, style="TButton")
 scrape_button.grid(row=4, column=0, columnspan=2, padx=10, pady=10)
+
+check_button = ttk.Button(root,text='فحص الأخطاء',command=check_data)
+check_button.grid(row=4, column=2, padx=10, pady=10)
 
 # Create a Treeview widget
 columns = [
