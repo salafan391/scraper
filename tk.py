@@ -4,6 +4,7 @@ from scrap import Scrap
 from tkinter import ttk
 import pandas as pd
 from check_data import check_data
+from tkinter import filedialog
 
 def scrape_website():
     url = 'https://www.muasah.org.sa/rafed/'
@@ -33,7 +34,16 @@ def show_table():
 
     except FileNotFoundError:
         messagebox.showerror("لا يوجد ملف", "البيانات غير متوفرة.")
+def export_excel():
+    
+    df = pd.read_excel('rafed_data.xlsx')
 
+    # Prompt the user to select a file location
+    file_path = filedialog.asksaveasfilename(defaultextension='.xlsx')
+    # Save the workbook to the selected file location
+    if file_path:
+    # Save the DataFrame to the selected file location
+        df.to_excel(file_path, index=False)
 # Create the main window
 root = tk.Tk()
 root.title("أداة استيراد البيانات من الموقع")
@@ -84,7 +94,10 @@ scrape_button = ttk.Button(root, text="استيراد", command=scrape_website, 
 scrape_button.grid(row=4, column=0, columnspan=2, padx=10, pady=10)
 
 check_button = ttk.Button(root,text='فحص الأخطاء',command=check_data)
-check_button.grid(row=4, column=2, padx=10, pady=10)
+check_button.grid(row=4, column=1, padx=10, pady=10)
+export_button = tk.Button(root, text="تصدير إكسل", command=export_excel)
+export_button.grid(row=6,column=1,padx=10, pady=10)
+
 
 # Create a Treeview widget
 columns = [
