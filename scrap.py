@@ -4,12 +4,13 @@ from bs4 import BeautifulSoup as bs
 from collections import defaultdict
 import re
 from itertools import islice
+import os
 class Scrap:
-    def __init__(self,url,username,password,count):
+    def __init__(self,url,username,password):
         self.url = url
         self.usernsme = username
         self.password = password
-        self.count = count
+        self.count = 1
         self.session = requests.session()
         login_page = self.session.get(self.url)
         login_soup = bs(login_page.content,'html.parser')
@@ -29,12 +30,15 @@ class Scrap:
         else:
             print('login faild',response.status_code)
     def get_data(self):
-        for i in range(self.count):
-            data_url = f'https://www.muasah.org.sa/rafed/_view_final_reports.php?id={i}'
+        while True:
+            data_url = f'https://www.muasah.org.sa/rafed/_view_final_reports.php?id={self.count}'
             data_page = self.session.get(data_url)
             soup = bs(data_page.content, 'html.parser')
             table = soup.find_all('table','data_table')
-            self.data_table+=str(table)    
+            self.data_table+=str(table)
+            self.count+=1
+            if len(table) == 0:
+                break    
     def combine_data(self):
         group_size = 10
         self.data_table = self.data_table.replace('[]','')
@@ -117,6 +121,28 @@ class Scrap:
             else:
                 dict_data['المرفقات'].append(0)
         df = pd.DataFrame(dict_data)
-        df.to_csv('rafed_data.csv',encoding='UTF-8')
-        with pd.ExcelWriter('rafed_data.xlsx', engine='xlsxwriter') as writer:
+        month_mapping = {
+                'يناير': 'January',
+                'فبراير': 'February',
+                'مارس': 'March',
+                'ابريل': 'April',
+                'مايو': 'May',
+                'يونيو': 'June',
+                'يوليو': 'July',
+                'أغسطس': 'August',
+                'سبتمبر': 'September',
+                'أكتوبر': 'October',
+                'نوفمبر': 'November',
+                'ديسمبر': 'December',
+                'ص':'AM',
+                'م':'PM'
+                }
+
+        for ar_month, en_month in month_mapping.items():
+            df['تاريخ الوفاة ميلادي'] = df['تاريخ الوفاة ميلادي'].apply(lambda x:x.replace(ar_month, en_month))
+        df['تاريخ الوفاة ميلادي'] = df['تاريخ الوفاة ميلادي'].apply(pd.to_datetime)
+        path = os.path.join('data_files','rafed_data.csv')
+        df.to_csv(path,encoding='UTF-8')
+        with pd.ExcelWriter('data_files/rafed_data.xlsx', engine='xlsxwriter') as writer:
             df.to_excel(writer, index=False)
+rafed = Scrap('https://www.muasah.org.sa/rafed/','أحمد الوحيشي','Ahmd605108')

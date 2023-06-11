@@ -1,7 +1,8 @@
 import pandas as pd
-df = pd.read_csv('rafed_data.csv')
+
 def check_data():
     try:
+        df = pd.read_csv('data_files/rafed_data.csv')
         def full_func(value):
             if isinstance(value,float):
                 return len(str(value).split('.')[0])
@@ -15,7 +16,6 @@ def check_data():
                 return 'x'
             else:
                 return ''
-
         def check_phone(value):
             value = str(value)
             if value != '9':
@@ -47,7 +47,7 @@ def check_data():
         reporters.rename(columns={'id_rep' : 'رقم البطاقة','phone_rep':'رقم الجوال'},inplace=True)
         dfs = [reporters,w1,w2]
         for i in range(0,len(dfs)):
-            dfs[i].to_excel(f'x{i}.xlsx')
+            dfs[i].to_excel(f'data_files/x{i}.xlsx')
     except:
         print('لا يوجد أخطاء')
 
